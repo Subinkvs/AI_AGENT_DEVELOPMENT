@@ -1,0 +1,8 @@
+aiagent
+.aiagent
+/aiagent
+*aiagent
+
+.env
+/env
+*env
