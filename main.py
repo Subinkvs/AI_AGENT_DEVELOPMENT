@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_agent
+from langgraph.checkpoint.memory import InMemorySaver 
 from tools import search_web, wiki_tool
 
 load_dotenv()
@@ -39,14 +40,16 @@ Rules (MANDATORY):
 - Populate "tools_used" with the names of tools you used
 - If no tools are used, return an empty list
 """,
-    tools= tools
+    tools= tools,
+    checkpointer=InMemorySaver(), 
 )
 
 query= input("What can i help you research ?\n")
 
-raw_response = agent.invoke({
-    "messages": [{"role": "user", "content": query}]
-})
+raw_response = agent.invoke(
+    {"messages": [{"role": "user", "content": query}]},
+    {"configurable": {"thread_id": "1"}}, 
+)
 
 ai_message = raw_response["messages"][-1]
 
