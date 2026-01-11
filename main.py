@@ -1,11 +1,9 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from langchain_openai import OpenAI, ChatOpenAI
-from langchain_anthropic import AnthropicLLM, ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_agent
-from langchain_core.prompts import ChatPromptTemplate
+from tools import search_web, wiki_tool
 
 load_dotenv()
 
@@ -15,41 +13,52 @@ class ResearchResponse(BaseModel):
     sources: list[str]
     tools_used: list[str]
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0
+)
 parser = PydanticOutputParser(pydantic_object=ResearchResponse)
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """
-            You are a research assistant that will help generate a research paper.
-            Answer the user query and use neccessary tools. 
-            Wrap the output in this format and provide no other text\n{format_instructions}
-            """,
-        ),
-        ("placeholder", "{chat_history}"),
-        ("human", "{query}"),
-        ("placeholder", "{agent_scratchpad}"),
-    ]
-).partial(format_instructions=parser.get_format_instructions())
+tools=[search_web, wiki_tool]
 
 agent = create_agent(
     model=llm,
-    system_prompt="""
-You are a research assistant that will help generate a research paper.
-Answer the user query and use necessary tools.
-Wrap the output in the specified format and provide no other text.
+    system_prompt=f"""
+You are a research assistant.
+
+You MUST return your final answer as VALID JSON.
+The JSON MUST strictly follow this schema:
+
+{parser.get_format_instructions()}
+
+Rules (MANDATORY):
+- Output ONLY JSON
+- Do NOT include explanations
+- Do NOT include markdown
+- Do NOT include extra text
+- Populate "tools_used" with the names of tools you used
+- If no tools are used, return an empty list
 """,
-    tools=[]
+    tools= tools
 )
 
+query= input("What can i help you research ?\n")
 
-# agent_executer = AgentExecutor(agent=agent, tools=[], verbose=True)
 raw_response = agent.invoke({
-    "messages": [{"role": "user", "content": "What is an AI Agent ?"}]
+    "messages": [{"role": "user", "content": query}]
 })
-print(raw_response["messages"][-1])
+
+ai_message = raw_response["messages"][-1]
+
+
+if isinstance(ai_message.content, list):
+    raw_text = ai_message.content[0]["text"]
+else:
+    raw_text = ai_message.content
+
+structured_response = parser.parse(raw_text)
+
+print(structured_response)
 
 
 
