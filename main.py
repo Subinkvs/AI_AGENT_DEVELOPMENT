@@ -4,7 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver 
-from tools import search_web, wiki_tool
+from tools import search_web, rag_search
 
 load_dotenv()
 
@@ -20,12 +20,17 @@ llm = ChatGoogleGenerativeAI(
 )
 parser = PydanticOutputParser(pydantic_object=ResearchResponse)
 
-tools=[search_web, wiki_tool]
+tools=[search_web, rag_search]
 
 agent = create_agent(
     model=llm,
     system_prompt=f"""
 You are a research assistant.
+
+Use:
+- rag_search for internal/company/product/technical documentation
+- search_web for external or real-time information
+
 
 You MUST return your final answer as VALID JSON.
 The JSON MUST strictly follow this schema:
@@ -62,7 +67,4 @@ else:
 structured_response = parser.parse(raw_text)
 
 print(structured_response)
-
-
-
 

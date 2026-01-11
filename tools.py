@@ -1,11 +1,11 @@
 from langchain_community.tools import WikipediaQueryRun, DuckDuckGoSearchRun
-from langchain_community.utilities import WikipediaAPIWrapper
 from langchain.tools import tool
+from rag.rag_store import load_rag_retriever
 
 duck = DuckDuckGoSearchRun()
+rag_retriever = load_rag_retriever()
 
-api_wrapper = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=100)
-wiki_tool = WikipediaQueryRun(api_wrapper=api_wrapper)
+
 
 @tool
 def search_web(query: str) -> str:
@@ -13,17 +13,29 @@ def search_web(query: str) -> str:
     Search the web and Wikipedia for factual information.
     Returns content along with exact sources.
     """
-    wiki_result = wiki_tool.run(query)
     duck_result = duck.run(query)
 
     return f"""
-SOURCE: Wikipedia
-{wiki_result}
 
 SOURCE: DuckDuckGo
 {duck_result}
 """
 
+@tool
+def rag_search(query: str) -> str:
+    """
+    Search internal company documents using vector similarity.
+    """
+    docs = rag_retriever.invoke(query)
 
+    if not docs:
+        return "No relevant internal documents found."
+
+    context = "\n\n".join(doc.page_content for doc in docs)
+
+    return f"""
+SOURCE: Internal Knowledge Base
+{context}
+"""
 
 
