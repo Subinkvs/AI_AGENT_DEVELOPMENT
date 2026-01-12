@@ -21,6 +21,7 @@ SOURCE: DuckDuckGo
 {duck_result}
 """
 
+
 @tool
 def rag_search(query: str) -> dict:
     """
