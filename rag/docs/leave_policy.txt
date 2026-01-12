@@ -1,0 +1,7 @@
+Leave Policy
+Version: 1.0
+Last Updated: January 2026
+
+Employees are entitled to 18 paid leave days per year.
+Unused leave cannot be carried forward unless explicitly approved by management.
+Medical leave requires submission of a valid medical certificate.

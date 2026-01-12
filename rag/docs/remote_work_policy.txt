@@ -1,0 +1,7 @@
+Remote Work Policy
+Version: 1.0
+Last Updated: January 2026
+
+Employees are eligible for remote work up to three days per week, subject to manager approval.
+Remote employees must ensure a stable internet connection and maintain productivity during working hours.
+The company reserves the right to revoke remote work privileges if performance is impacted.
