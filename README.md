@@ -45,3 +45,28 @@ Embed and store documents, retrieve relevant chunks, and provide them as context
   "answer": "Employees are entitled to 18 paid leave days per year...",
   "source": ["company_policy.txt"]
 }
+
+## Future Improvements
+
+### Local LLM–Based Agentic RAG
+
+A significant future enhancement for this system is the integration of a **fully local Large Language Model (LLM)** to run the complete **Agentic RAG pipeline** on a local server.
+
+**Planned Enhancements:**
+
+- Integrate local LLMs such as **LLaMA / LLaMA 3, Mistral, Phi, or Qwen**
+- Serve models using frameworks like **Ollama**, **vLLM**, or **LM Studio**
+- Run the entire RAG workflow locally:
+  - Embedding generation
+  - Vector similarity search using **FAISS**
+  - Agent reasoning and response generation
+- Enable **offline and private-network deployments**
+
+**Benefits:**
+
+- **Reduced operational cost** by eliminating cloud-based per-token API usage
+- **Enhanced data privacy and security**, as internal documents remain within local infrastructure
+- **Greater control and customization** over model behavior and performance
+- Improved suitability for **enterprise, on-premise, and confidential use cases**
+
+This improvement would make the system a **cost-efficient, privacy-preserving, enterprise-ready Agentic RAG solution** capable of running entirely on local infrastructure.
