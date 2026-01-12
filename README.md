@@ -39,13 +39,6 @@ Embed and store documents, retrieve relevant chunks, and provide them as context
 - **Metadata:** Each document chunk includes `metadata["source"]` for accurate source attribution
 - **Retrieval:** Top 3 most similar chunks returned to the agent
 
-**Example Output:**
-```json
-{
-  "answer": "Employees are entitled to 18 paid leave days per year...",
-  "source": ["company_policy.txt"]
-}
-
 ## Future Improvements
 
 ### Local LLM–Based Agentic RAG
@@ -70,3 +63,13 @@ A significant future enhancement for this system is the integration of a **fully
 - Improved suitability for **enterprise, on-premise, and confidential use cases**
 
 This improvement would make the system a **cost-efficient, privacy-preserving, enterprise-ready Agentic RAG solution** capable of running entirely on local infrastructure.
+
+
+
+**Example Output:**
+```json
+{
+  "answer": "Employees are entitled to 18 paid leave days per year...",
+  "source": ["company_policy.txt"]
+}
+
