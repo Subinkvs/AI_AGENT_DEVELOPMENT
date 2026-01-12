@@ -22,20 +22,28 @@ SOURCE: DuckDuckGo
 """
 
 @tool
-def rag_search(query: str) -> str:
+def rag_search(query: str) -> dict:
     """
     Search internal company documents using vector similarity.
+    Returns context and exact document sources.
     """
     docs = rag_retriever.invoke(query)
 
     if not docs:
-        return "No relevant internal documents found."
+        return {
+            "context": "",
+            "sources": []
+        }
 
     context = "\n\n".join(doc.page_content for doc in docs)
+    sources = list({
+        doc.metadata.get("source", "unknown")
+        for doc in docs
+    })
 
-    return f"""
-SOURCE: Internal Knowledge Base
-{context}
-"""
+    return {
+        "context": context,
+        "sources": sources
+    }
 
 

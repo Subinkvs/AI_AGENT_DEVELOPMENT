@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+from typing import Optional, List
+from fastapi import FastAPI
 from pydantic import BaseModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import PydanticOutputParser
@@ -8,11 +10,22 @@ from tools import search_web, rag_search
 
 load_dotenv()
 
+app = FastAPI(title="Agentic RAG Backend API")
+
 class ResearchResponse(BaseModel):
     topic: str
     summary: str
     sources: list[str]
     tools_used: list[str]
+
+class AskRequest(BaseModel):
+    query: str
+    session_id: Optional[str] = "default"
+
+
+class AskAPIResponse(BaseModel):
+    answer: str
+    source: List[str]
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
@@ -49,22 +62,23 @@ Rules (MANDATORY):
     checkpointer=InMemorySaver(), 
 )
 
-query= input("What can i help you research ?\n")
+@app.post("/ask", response_model=AskAPIResponse)
+def ask(payload: AskRequest):
+    raw_response = agent.invoke(
+        {"messages": [{"role": "user", "content": payload.query}]},
+        {"configurable": {"thread_id": payload.session_id}},
+    )
 
-raw_response = agent.invoke(
-    {"messages": [{"role": "user", "content": query}]},
-    {"configurable": {"thread_id": "1"}}, 
-)
+    ai_message = raw_response["messages"][-1]
 
-ai_message = raw_response["messages"][-1]
+    if isinstance(ai_message.content, list):
+        raw_text = ai_message.content[0]["text"]
+    else:
+        raw_text = ai_message.content
 
+    structured_response: ResearchResponse = parser.parse(raw_text)
 
-if isinstance(ai_message.content, list):
-    raw_text = ai_message.content[0]["text"]
-else:
-    raw_text = ai_message.content
-
-structured_response = parser.parse(raw_text)
-
-print(structured_response)
-
+    return {
+        "answer": structured_response.summary,
+        "source": structured_response.sources
+    }

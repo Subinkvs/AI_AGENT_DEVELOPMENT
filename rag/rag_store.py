@@ -1,16 +1,12 @@
 import os
-from dotenv import load_dotenv
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
-load_dotenv()
-
-EMBEDDINGS = GoogleGenerativeAIEmbeddings(
-    model="models/embedding-001",
-    google_api_key=os.getenv("GEMINI_API_KEY")
-)
+EMBEDDINGS = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 INDEX_PATH = "rag/faiss_index"
 
@@ -20,7 +16,12 @@ def build_rag_index():
     for file in os.listdir("rag/docs"):
         if file.endswith(".txt"):
             loader = TextLoader(f"rag/docs/{file}")
-            documents.extend(loader.load())
+            docs = loader.load()
+
+            for d in docs:
+                d.metadata["source"] = file
+
+            documents.extend(docs)
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=300,
@@ -33,9 +34,15 @@ def build_rag_index():
 
 
 def load_rag_retriever():
+    if not os.path.exists(os.path.join(INDEX_PATH, "index.faiss")):
+        print("FAISS index not found. Building index...")
+        build_rag_index()
+
     vectorstore = FAISS.load_local(
         INDEX_PATH,
         EMBEDDINGS,
         allow_dangerous_deserialization=True
     )
+
     return vectorstore.as_retriever(search_kwargs={"k": 3})
+
