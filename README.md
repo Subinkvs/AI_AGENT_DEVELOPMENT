@@ -68,6 +68,13 @@ This improvement would make the system a **cost-efficient, privacy-preserving, e
 
 **Example Output:**
 ```json
+
+{
+  "query": "How many paid leaves an employee have per year ?"
+}
+
+
+
 {
   "answer": "Employees are entitled to 18 paid leave days per year...",
   "source": ["company_policy.txt"]
