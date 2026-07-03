@@ -6,3 +6,7 @@ aiagent
 .env
 /env
 *env
+
+.rag
+/rag
+*rag
