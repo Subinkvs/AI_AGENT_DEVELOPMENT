@@ -8,7 +8,7 @@ that capture meaning and relationships.'''
 
 sentences = [
     "I have a Dog",
-    "I own a German Shepherd Dog"
+    "I have a Dog"
 ]
 
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -20,7 +20,7 @@ similarity = np.dot(
     embeddings[1]
 )
 
-print(f"{similarity * 100:.0f}% similar")
+print(f"{similarity * 100:.2f}% similar")
 
 
 
