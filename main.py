@@ -12,6 +12,7 @@ load_dotenv()
 
 app = FastAPI(title="Agentic RAG Backend API")
 
+
 class ResearchResponse(BaseModel):
     topic: str
     summary: str
