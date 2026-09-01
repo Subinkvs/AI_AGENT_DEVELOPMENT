@@ -11,6 +11,7 @@ EMBEDDINGS = HuggingFaceEmbeddings(
 INDEX_PATH = "rag/faiss_index"
 
 
+
 def build_rag_index():
     documents = []
     for file in os.listdir("rag/docs"):

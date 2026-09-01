@@ -1,12 +1,6 @@
-aiagent
-.aiagent
-/aiagent
-*aiagent
+
 
 .env
 /env
 *env
 
-.rag
-/rag
-*rag
