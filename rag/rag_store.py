@@ -1,49 +1,69 @@
-import os
+from pathlib import Path
+
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import OllamaEmbeddings
 
-EMBEDDINGS = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-INDEX_PATH = "rag/faiss_index"
+BASE_DIR = Path(__file__).resolve().parent
+DOCS_DIR = BASE_DIR / "docs"
+INDEX_PATH = str(BASE_DIR / "faiss_index")
+
+
+EMBEDDINGS = OllamaEmbeddings(
+    model="nomic-embed-text"
+)
 
 
 
 def build_rag_index():
     documents = []
-    for file in os.listdir("rag/docs"):
-        if file.endswith(".txt"):
-            loader = TextLoader(f"rag/docs/{file}")
-            docs = loader.load()
 
-            for d in docs:
-                d.metadata["source"] = file
+    for file_path in DOCS_DIR.glob("*.txt"):
+        loader = TextLoader(str(file_path))
+        docs = loader.load()
 
-            documents.extend(docs)
+        for doc in docs:
+            doc.metadata["source"] = file_path.name
+
+        documents.extend(docs)
+
+    if not documents:
+        raise RuntimeError(
+            f"No .txt documents found in {DOCS_DIR}"
+        )
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=300,
-        chunk_overlap=50
+        chunk_overlap=50,
     )
+
     chunks = splitter.split_documents(documents)
 
-    vectorstore = FAISS.from_documents(chunks, EMBEDDINGS)
+    vectorstore = FAISS.from_documents(
+        chunks,
+        EMBEDDINGS,
+    )
+
     vectorstore.save_local(INDEX_PATH)
+
+    print(f"RAG index built with {len(chunks)} chunks")
 
 
 def load_rag_retriever():
-    if not os.path.exists(os.path.join(INDEX_PATH, "index.faiss")):
+    index_file = Path(INDEX_PATH) / "index.faiss"
+
+    if not index_file.exists():
         print("FAISS index not found. Building index...")
         build_rag_index()
 
     vectorstore = FAISS.load_local(
         INDEX_PATH,
         EMBEDDINGS,
-        allow_dangerous_deserialization=True
+        allow_dangerous_deserialization=True,
     )
 
-    return vectorstore.as_retriever(search_kwargs={"k": 3})
-
+    return vectorstore.as_retriever(
+        search_kwargs={"k": 3}
+    )
